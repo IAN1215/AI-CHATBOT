@@ -1,4 +1,4 @@
-# 凱川工業 LINE Bot 客服系統
+# SaaS AI LINE Bot 客服系統平台
 
 這是一個整合了 LINE Messaging API 的客服系統，包含管理後台和錯誤處理機制。
 
