@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoChat - 訂閱管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .main-container {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .subscription-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .current-plan {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .plan-badge.free {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .plan-badge.premium {
+            background: #ffd700;
+            color: #333;
+        }
+        
+        .plan-badge.pro {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .plan-badge.enterprise {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .usage-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .usage-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .plan-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .plan-option {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .plan-option:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .plan-option.recommended {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .plan-option.current {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .plan-price {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 15px 0;
+        }
+        
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        
+        .plan-features li {
+            padding: 8px 0;
+            color: #666;
+        }
+        
+        .plan-features li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .btn-upgrade {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-current {
+            background: #28a745;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/admin.html">
+                <i class="fas fa-robot me-2"></i>EchoChat
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin.html">
+                    <i class="fas fa-tachometer-alt me-1"></i>管理後台
+                </a>
+                <a class="nav-link" href="#" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-1"></i>登出
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div id="alertContainer"></div>
+        
+        <!-- 當前訂閱狀態 -->
+        <div class="current-plan">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="plan-badge" id="currentPlanBadge">免費版</span>
+                    <h3 class="mb-3">當前訂閱方案</h3>
+                    <p class="mb-3">您的帳號目前使用 <strong id="currentPlanName">免費版</strong> 方案</p>
+                    
+                    <div class="usage-info">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>API 呼叫使用量</span>
+                            <span id="usageText">0 / 100</span>
+                        </div>
+                        <div class="usage-bar">
+                            <div class="usage-fill" id="usageFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small>訂閱到期日：<span id="expiryDate">無限制</span></small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="stat-number" id="remainingCalls">100</div>
+                    <div class="stat-label">剩餘呼叫次數</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 使用統計 -->
+        <div class="subscription-card">
+            <h4 class="mb-4">使用統計</h4>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCalls">0</div>
+                    <div class="stat-label">本月總呼叫次數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="successRate">0%</div>
+                    <div class="stat-label">成功率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgResponseTime">0ms</div>
+                    <div class="stat-label">平均回應時間</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeUsers">0</div>
+                    <div class="stat-label">活躍用戶數</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 升級方案 -->
+        <div class="subscription-card">
+            <h4 class="mb-4">升級方案</h4>
+            <p class="text-muted mb-4">選擇適合您需求的方案，享受更多功能和更高的API呼叫限制</p>
+            
+            <div class="plan-options" id="planOptions">
+                <!-- 方案將由JavaScript動態載入 -->
+            </div>
+        </div>
+        
+        <!-- 訂閱歷史 -->
+        <div class="subscription-card">
+            <h4 class="mb-4">訂閱歷史</h4>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>方案</th>
+                            <th>開始日期</th>
+                            <th>結束日期</th>
+                            <th>狀態</th>
+                            <th>金額</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptionHistory">
+                        <!-- 歷史記錄將由JavaScript動態載入 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 檢查登入狀態
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            return token;
+        }
+
+        // 顯示警告訊息
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // 載入訂閱資訊
+        async function loadSubscriptionInfo() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch('/api/subscription/info', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateSubscriptionDisplay(data);
+                } else {
+                    showAlert('載入訂閱資訊失敗', 'danger');
+                }
+            } catch (error) {
+                showAlert('載入訂閱資訊失敗', 'danger');
+            }
+        }
+
+        // 更新訂閱顯示
+        function updateSubscriptionDisplay(data) {
+            // 更新當前方案
+            document.getElementById('currentPlanName').textContent = data.currentPlan.name;
+            document.getElementById('currentPlanBadge').textContent = data.currentPlan.name;
+            document.getElementById('currentPlanBadge').className = `plan-badge ${data.currentPlan.name.toLowerCase()}`;
+            
+            // 更新使用量
+            const usagePercent = (data.usage.api_calls_used / data.usage.api_calls_limit) * 100;
+            document.getElementById('usageText').textContent = `${data.usage.api_calls_used} / ${data.usage.api_calls_limit}`;
+            document.getElementById('usageFill').style.width = `${Math.min(usagePercent, 100)}%`;
+            document.getElementById('remainingCalls').textContent = data.usage.api_calls_limit - data.usage.api_calls_used;
+            
+            // 更新到期日
+            document.getElementById('expiryDate').textContent = data.subscriptionEnd || '無限制';
+            
+            // 更新統計
+            document.getElementById('totalCalls').textContent = data.stats.totalCalls;
+            document.getElementById('successRate').textContent = `${data.stats.successRate}%`;
+            document.getElementById('avgResponseTime').textContent = `${data.stats.avgResponseTime}ms`;
+            document.getElementById('activeUsers').textContent = data.stats.activeUsers;
+        }
+
+        // 載入方案選項
+        async function loadPlanOptions() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch('/api/subscription-plans', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const plans = await response.json();
+                    const container = document.getElementById('planOptions');
+                    
+                    container.innerHTML = plans.map(plan => {
+                        const isCurrent = plan.name === document.getElementById('currentPlanName').textContent;
+                        const isRecommended = plan.name === '基礎版';
+                        
+                        return `
+                            <div class="plan-option ${isCurrent ? 'current' : ''} ${isRecommended ? 'recommended' : ''}">
+                                ${isRecommended ? '<div class="badge bg-warning text-dark mb-2">推薦</div>' : ''}
+                                ${isCurrent ? '<div class="badge bg-success mb-2">當前方案</div>' : ''}
+                                
+                                <h5>${plan.name}</h5>
+                                <div class="plan-price">NT$ ${plan.price}</div>
+                                <div class="text-muted mb-3">每月 ${plan.api_calls_limit} 次API呼叫</div>
+                                
+                                <ul class="plan-features">
+                                    ${JSON.parse(plan.features).map(feature => `<li>${feature}</li>`).join('')}
+                                </ul>
+                                
+                                <button class="btn ${isCurrent ? 'btn-current' : 'btn-upgrade'}" 
+                                        onclick="upgradePlan('${plan.name}')" 
+                                        ${isCurrent ? 'disabled' : ''}>
+                                    ${isCurrent ? '當前方案' : '升級方案'}
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                showAlert('載入方案選項失敗', 'danger');
+            }
+        }
+
+        // 載入訂閱歷史
+        async function loadSubscriptionHistory() {
+            const token = checkAuth();
+            if (!token) return;
+
+            try {
+                const response = await fetch('/api/subscription/history', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const history = await response.json();
+                    const container = document.getElementById('subscriptionHistory');
+                    
+                    if (history.length === 0) {
+                        container.innerHTML = '<tr><td colspan="5" class="text-center text-muted">尚無訂閱記錄</td></tr>';
+                    } else {
+                        container.innerHTML = history.map(record => `
+                            <tr>
+                                <td>${record.plan_name}</td>
+                                <td>${new Date(record.start_date).toLocaleDateString()}</td>
+                                <td>${new Date(record.end_date).toLocaleDateString()}</td>
+                                <td>
+                                    <span class="badge ${record.status === 'active' ? 'bg-success' : 'bg-secondary'}">
+                                        ${record.status === 'active' ? '使用中' : '已結束'}
+                                    </span>
+                                </td>
+                                <td>NT$ ${record.amount_paid}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                showAlert('載入訂閱歷史失敗', 'danger');
+            }
+        }
+
+        // 升級方案
+        async function upgradePlan(planName) {
+            const token = checkAuth();
+            if (!token) return;
+
+            if (!confirm(`確定要升級到 ${planName} 方案嗎？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/subscription/upgrade', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ planName })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showAlert('方案升級成功！', 'success');
+                    setTimeout(() => {
+                        loadSubscriptionInfo();
+                        loadPlanOptions();
+                    }, 1000);
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || '升級失敗', 'danger');
+                }
+            } catch (error) {
+                showAlert('升級失敗，請稍後再試', 'danger');
+            }
+        }
+
+        // 登出
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login.html';
+        }
+
+        // 頁面載入時執行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSubscriptionInfo();
+            loadPlanOptions();
+            loadSubscriptionHistory();
+        });
+    </script>
+</body>
+</html> 

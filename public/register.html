@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoChat - 註冊</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .register-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .register-header h2 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .register-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .register-body {
+            padding: 40px 30px;
+        }
+        
+        .form-floating {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .input-group-text {
+            background: transparent;
+            border: 2px solid #e9ecef;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .input-group:focus-within .input-group-text {
+            border-color: #667eea;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .plan-card {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .plan-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .plan-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .plan-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        
+        .plan-features li {
+            padding: 5px 0;
+            color: #666;
+        }
+        
+        .plan-features li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .footer-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .footer-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #764ba2;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        
+        .step.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <i class="fas fa-robot fa-3x mb-3"></i>
+                <h2>EchoChat</h2>
+                <p>智能聊天機器人管理系統 - 註冊</p>
+            </div>
+            
+            <div class="register-body">
+                <div id="alertContainer"></div>
+                
+                <!-- 步驟指示器 -->
+                <div class="step-indicator">
+                    <div class="step active" id="step1">1</div>
+                    <div class="step" id="step2">2</div>
+                    <div class="step" id="step3">3</div>
+                </div>
+                
+                <!-- 步驟1：基本資料 -->
+                <div id="step1Content">
+                    <h4 class="mb-4">基本資料</h4>
+                    <form id="basicInfoForm">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" class="form-control" id="username" placeholder="使用者名稱" required>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" placeholder="電子郵件" required>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" placeholder="密碼" required>
+                        </div>
+                        
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="確認密碼" required>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary btn-register" onclick="nextStep()">
+                            下一步 <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- 步驟2：選擇方案 -->
+                <div id="step2Content" style="display: none;">
+                    <h4 class="mb-4">選擇訂閱方案</h4>
+                    <div id="plansContainer">
+                        <!-- 方案將由JavaScript動態載入 -->
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">
+                            <i class="fas fa-arrow-left me-2"></i>上一步
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                            下一步 <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 步驟3：LINE設定 -->
+                <div id="step3Content" style="display: none;">
+                    <h4 class="mb-4">LINE Bot設定</h4>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        請在LINE Developers Console創建一個新的Channel，然後填入以下資訊
+                    </div>
+                    
+                    <form id="lineConfigForm">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <i class="fas fa-key"></i>
+                            </span>
+                            <input type="text" class="form-control" id="lineChannelId" placeholder="Channel ID" required>
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <i class="fas fa-shield-alt"></i>
+                            </span>
+                            <input type="text" class="form-control" id="lineChannelSecret" placeholder="Channel Secret" required>
+                        </div>
+                        
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">
+                                <i class="fas fa-token"></i>
+                            </span>
+                            <input type="text" class="form-control" id="lineChannelAccessToken" placeholder="Channel Access Token" required>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">
+                                <i class="fas fa-arrow-left me-2"></i>上一步
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-register" id="registerBtn">
+                                <i class="fas fa-user-plus me-2"></i>完成註冊
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="/login.html">已有帳號？立即登入</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentStep = 1;
+        let selectedPlan = null;
+        let userData = {};
+
+        // 載入訂閱方案
+        async function loadPlans() {
+            try {
+                const response = await fetch('/api/subscription-plans');
+                const plans = await response.json();
+                
+                const container = document.getElementById('plansContainer');
+                container.innerHTML = plans.map(plan => `
+                    <div class="plan-card" onclick="selectPlan('${plan.name}')" data-plan="${plan.name}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">${plan.name}</h5>
+                            <div class="plan-price">NT$ ${plan.price}</div>
+                        </div>
+                        <ul class="plan-features">
+                            ${JSON.parse(plan.features).map(feature => `<li>${feature}</li>`).join('')}
+                        </ul>
+                        <div class="text-muted small">每月 ${plan.api_calls_limit} 次API呼叫</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                showAlert('載入方案失敗', 'danger');
+            }
+        }
+
+        // 選擇方案
+        function selectPlan(planName) {
+            selectedPlan = planName;
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-plan="${planName}"]`).classList.add('selected');
+        }
+
+        // 下一步
+        function nextStep() {
+            if (currentStep === 1) {
+                if (!validateBasicInfo()) return;
+                userData = {
+                    username: document.getElementById('username').value,
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                };
+            } else if (currentStep === 2) {
+                if (!selectedPlan) {
+                    showAlert('請選擇一個訂閱方案', 'warning');
+                    return;
+                }
+                userData.plan = selectedPlan;
+            }
+            
+            document.getElementById(`step${currentStep}Content`).style.display = 'none';
+            currentStep++;
+            document.getElementById(`step${currentStep}Content`).style.display = 'block';
+            
+            updateStepIndicator();
+            
+            if (currentStep === 2) {
+                loadPlans();
+            }
+        }
+
+        // 上一步
+        function prevStep() {
+            document.getElementById(`step${currentStep}Content`).style.display = 'none';
+            currentStep--;
+            document.getElementById(`step${currentStep}Content`).style.display = 'block';
+            updateStepIndicator();
+        }
+
+        // 更新步驟指示器
+        function updateStepIndicator() {
+            for (let i = 1; i <= 3; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed');
+                if (i < currentStep) {
+                    step.classList.add('completed');
+                } else if (i === currentStep) {
+                    step.classList.add('active');
+                }
+            }
+        }
+
+        // 驗證基本資料
+        function validateBasicInfo() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showAlert('密碼確認不符', 'danger');
+                return false;
+            }
+            
+            if (password.length < 6) {
+                showAlert('密碼至少需要6個字元', 'danger');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 顯示警告訊息
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // 處理註冊
+        document.getElementById('lineConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.innerHTML = '<span class="loading"></span> 註冊中...';
+            registerBtn.disabled = true;
+            
+            try {
+                const lineConfig = {
+                    channelId: document.getElementById('lineChannelId').value,
+                    channelSecret: document.getElementById('lineChannelSecret').value,
+                    channelAccessToken: document.getElementById('lineChannelAccessToken').value
+                };
+                
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...userData,
+                        lineConfig
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showAlert('註冊成功！正在跳轉到登入頁面...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || '註冊失敗', 'danger');
+                }
+            } catch (error) {
+                showAlert('註冊失敗，請稍後再試', 'danger');
+            } finally {
+                registerBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>完成註冊';
+                registerBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html> 

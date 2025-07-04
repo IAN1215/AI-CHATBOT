@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoChat - 儀表板</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 4px 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .quick-action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .quick-action-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .recent-activity {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .activity-content {
+            flex-grow: 1;
+        }
+        
+        .activity-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .stats-card {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 側邊欄 -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar p-4">
+                    <div class="text-center mb-4">
+                        <h4><i class="fas fa-robot me-2"></i>EchoChat</h4>
+                        <p class="text-muted small">儀表板</p>
+                    </div>
+                    
+                    <nav class="nav flex-column">
+                        <a class="nav-link" href="#" id="aiConfigToggle">
+                            <i class="fas fa-robot me-2"></i>AI助理配置 <span id="aiConfigArrow" style="float:right;">&#9654;</span>
+                        </a>
+                        <div id="aiConfigMenu" style="display:none; margin-left:20px;">
+                            <a class="nav-link" href="#" data-tab="aiassistant">
+                                <i class="fas fa-cog me-2"></i>AI助理資訊
+                            </a>
+                            <a class="nav-link" href="#" data-tab="knowledge">
+                                <i class="fas fa-book me-2"></i>知識庫
+                            </a>
+                            <a class="nav-link" href="#" data-tab="channel">
+                                <i class="fas fa-stream me-2"></i>頻道
+                            </a>
+                            <a class="nav-link" href="#" data-tab="cases">
+                                <i class="fas fa-folder-open me-2"></i>使用案例庫
+                            </a>
+                            <a class="nav-link" href="#" data-tab="integration">
+                                <i class="fas fa-plug me-2"></i>整合
+                            </a>
+                        </div>
+                        <a class="nav-link active" href="#" data-tab="dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i>儀表板
+                        </a>
+                        <a class="nav-link" href="#" data-tab="users">
+                            <i class="fas fa-users me-2"></i>用戶管理
+                        </a>
+                        <a class="nav-link" href="#" data-tab="analytics">
+                            <i class="fas fa-chart-bar me-2"></i>數據分析
+                        </a>
+                        <a class="nav-link" href="#" data-tab="settings">
+                            <i class="fas fa-cog me-2"></i>系統設定
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- 主要內容區 -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content p-4">
+                    <!-- 標題列 -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">
+                            <span id="pageTitle">儀表板</span>
+                        </h2>
+                        <div class="d-flex align-items-center">
+                            <span class="me-3">
+                                <i class="fas fa-clock me-1"></i>
+                                <span id="currentTime"></span>
+                            </span>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="refreshData()">
+                                <i class="fas fa-sync-alt me-1"></i>重新整理
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 儀表板頁面 -->
+                    <div id="dashboardPage">
+                        <!-- 統計卡片 -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-primary mx-auto mb-3">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <h3 id="totalUsers">0</h3>
+                                    <p class="text-muted mb-0">總用戶數</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-success mx-auto mb-3">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <h3 id="totalMessages">0</h3>
+                                    <p class="text-muted mb-0">總訊息數</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-warning mx-auto mb-3">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <h3 id="knowledgeItems">0</h3>
+                                    <p class="text-muted mb-0">知識庫項目</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-info mx-auto mb-3">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <h3 id="avgResponse">0s</h3>
+                                    <p class="text-muted mb-0">平均回應時間</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 快速操作 -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h4 class="mb-3">快速操作</h4>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="quick-action-card" onclick="navigateTo('/admin.html')">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-cogs"></i>
+                                    </div>
+                                    <h5>系統管理</h5>
+                                    <p class="text-muted">管理用戶和知識庫</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="quick-action-card" onclick="addKnowledge()">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <h5>新增知識</h5>
+                                    <p class="text-muted">添加新的問答對</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="quick-action-card" onclick="viewReports()">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <h5>查看報表</h5>
+                                    <p class="text-muted">系統使用統計</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="quick-action-card" onclick="systemSettings()">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-wrench"></i>
+                                    </div>
+                                    <h5>系統設定</h5>
+                                    <p class="text-muted">配置系統參數</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 圖表和活動 -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="chart-card">
+                                    <h5 class="mb-3">用戶活躍度趨勢</h5>
+                                    <canvas id="userActivityChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="recent-activity">
+                                    <h5 class="mb-3">最近活動</h5>
+                                    <div id="activityList">
+                                        <!-- 活動項目將在這裡動態生成 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 其他頁面（隱藏） -->
+                    <div id="usersPage" class="hidden">
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h4>用戶管理</h4>
+                            <p class="text-muted">點擊下方按鈕前往用戶管理頁面</p>
+                            <a href="/admin.html" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-2"></i>前往用戶管理
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="knowledgePage" class="hidden">
+                        <div class="text-center py-5">
+                            <i class="fas fa-brain fa-3x text-muted mb-3"></i>
+                            <h4>知識庫管理</h4>
+                            <p class="text-muted">點擊下方按鈕前往知識庫管理頁面</p>
+                            <a href="/admin.html" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-2"></i>前往知識庫管理
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="analyticsPage" class="hidden">
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h4>數據分析</h4>
+                            <p class="text-muted">點擊下方按鈕前往數據分析頁面</p>
+                            <a href="/admin.html" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-2"></i>前往數據分析
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="settingsPage" class="hidden">
+                        <div class="text-center py-5">
+                            <i class="fas fa-cog fa-3x text-muted mb-3"></i>
+                            <h4>系統設定</h4>
+                            <p class="text-muted">點擊下方按鈕前往系統設定頁面</p>
+                            <a href="/admin.html" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-2"></i>前往系統設定
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="aiassistantPage" class="hidden">
+                        <div v-if="!assistantProfile || Object.keys(assistantProfile).length === 0" class="text-center py-5">
+                            <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+                            <h4>AI助理資訊</h4>
+                            <p class="text-muted">這裡可以顯示AI助理的狀態、版本、說明等資訊。</p>
+                        </div>
+                        <div v-else class="py-4 px-3">
+                            <div style="max-height:400px;overflow:auto;" class="bg-light p-3 rounded shadow-sm">
+                                <pre style="white-space:pre-wrap;word-break:break-all;">{{ assistantProfile.description || '尚未設定描述' }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="lineApiModal" tabindex="-1" aria-labelledby="lineApiModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="lineApiModalLabel">LINE API 串接設定</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="lineApiForm">
+              <div class="mb-3">
+                <label for="lineChannelId" class="form-label">Channel ID</label>
+                <input type="text" class="form-control" id="lineChannelId" required>
+              </div>
+              <div class="mb-3">
+                <label for="lineChannelSecret" class="form-label">Channel Secret</label>
+                <input type="text" class="form-control" id="lineChannelSecret" required>
+              </div>
+              <div class="mb-3">
+                <label for="lineChannelAccessToken" class="form-label">Channel Access Token</label>
+                <input type="text" class="form-control" id="lineChannelAccessToken" required>
+              </div>
+              <div id="lineApiAlert"></div>
+              <button type="submit" class="btn btn-primary w-100">儲存設定</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 切換頁面
+        function switchTab(tab) {
+            // 隱藏所有頁面
+            document.getElementById('dashboardPage').classList.add('hidden');
+            document.getElementById('usersPage').classList.add('hidden');
+            document.getElementById('knowledgePage').classList.add('hidden');
+            document.getElementById('analyticsPage').classList.add('hidden');
+            document.getElementById('settingsPage').classList.add('hidden');
+            document.getElementById('aiassistantPage').classList.add('hidden');
+            // 新增子頁面
+            if(document.getElementById('channelPage')) document.getElementById('channelPage').classList.add('hidden');
+            if(document.getElementById('casesPage')) document.getElementById('casesPage').classList.add('hidden');
+            if(document.getElementById('integrationPage')) document.getElementById('integrationPage').classList.add('hidden');
+            
+            // 移除所有導航連結的 active 狀態
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 顯示選中的頁面
+            if (tab === 'dashboard') {
+                document.getElementById('dashboardPage').classList.remove('hidden');
+                document.querySelector('.sidebar .nav-link:nth-child(1)').classList.add('active');
+                updatePageTitle('儀表板');
+                loadDashboardData();
+            } else if (tab === 'aiassistant') {
+                document.getElementById('aiassistantPage').classList.remove('hidden');
+                document.querySelector('.sidebar .nav-link:nth-child(2)').classList.add('active');
+                updatePageTitle('AI助理資訊');
+            } else if (tab === 'users') {
+                document.getElementById('usersPage').classList.remove('hidden');
+                document.querySelector('.sidebar .nav-link:nth-child(3)').classList.add('active');
+                updatePageTitle('用戶管理');
+            } else if (tab === 'knowledge') {
+                document.getElementById('knowledgePage').classList.remove('hidden');
+                document.querySelector('.sidebar .nav-link:nth-child(4)').classList.add('active');
+                updatePageTitle('知識庫管理');
+            } else if (tab === 'analytics') {
+                document.getElementById('analyticsPage').classList.remove('hidden');
+                document.querySelector('.sidebar .nav-link:nth-child(5)').classList.add('active');
+                updatePageTitle('數據分析');
+            } else if (tab === 'settings') {
+                document.getElementById('settingsPage').classList.remove('hidden');
+                document.querySelector('.sidebar .nav-link:nth-child(6)').classList.add('active');
+                updatePageTitle('系統設定');
+            } else if (tab === 'channel') {
+                if(!document.getElementById('channelPage')) {
+                    const div = document.createElement('div');
+                    div.id = 'channelPage';
+                    div.className = 'hidden';
+                    div.innerHTML = `
+                    <div class="container py-4">
+                        <h4 class="mb-3">頻道串接</h4>
+                        <p class="text-muted">配置新管道，為客戶提供更多與您的AI語音助理互動的方式。</p>
+                        <div class="d-flex justify-content-center mb-4 flex-wrap gap-3">
+                            <button class="btn btn-lg rounded-circle shadow-sm" style="background:#00c300;color:white;width:60px;height:60px;"><i class="fab fa-line fa-2x"></i></button>
+                            <button class="btn btn-lg rounded-circle shadow-sm" style="background:#3b5998;color:white;width:60px;height:60px;"><i class="fab fa-facebook-f fa-2x"></i></button>
+                            <button class="btn btn-lg rounded-circle shadow-sm" style="background:#e4405f;color:white;width:60px;height:60px;"><i class="fab fa-instagram fa-2x"></i></button>
+                            <button class="btn btn-lg rounded-circle shadow-sm" style="background:#25d366;color:white;width:60px;height:60px;"><i class="fab fa-whatsapp fa-2x"></i></button>
+                            <button class="btn btn-lg rounded-circle shadow-sm" style="background:#0084ff;color:white;width:60px;height:60px;"><i class="fab fa-facebook-messenger fa-2x"></i></button>
+                            <button class="btn btn-lg rounded-circle shadow-sm" style="background:#00bcd4;color:white;width:60px;height:60px;"><i class="fas fa-globe fa-2x"></i></button>
+                            <button class="btn btn-lg rounded-circle shadow-sm" style="background:#4caf50;color:white;width:60px;height:60px;"><i class="fas fa-phone fa-2x"></i></button>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-phone me-2 text-success"></i>電話</h5>
+                                        <p class="card-text">使用AI聊天助理來接聽或撥打免付費電話。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-globe me-2 text-info"></i>網頁AI助理</h5>
+                                        <p class="card-text">透過URL聊天或嵌入網站。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm" id="lineApiCard" style="cursor:pointer;">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fab fa-line me-2 text-success"></i>LINE</h5>
+                                        <p class="card-text">連接到您的LINE企業帳戶。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fab fa-whatsapp me-2 text-success"></i>WhatsApp</h5>
+                                        <p class="card-text">連接到您的WhatsApp帳戶來發送並接收訊息。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fab fa-facebook-messenger me-2 text-primary"></i>Messenger（嵌入式註冊）</h5>
+                                        <p class="card-text">登入並連接Messenger。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fab fa-instagram me-2 text-danger"></i>Instagram</h5>
+                                        <p class="card-text">Login and connect Instagram。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                    document.querySelector('.main-content').appendChild(div);
+                }
+                document.getElementById('channelPage').classList.remove('hidden');
+                updatePageTitle('頻道');
+            } else if (tab === 'cases') {
+                if(!document.getElementById('casesPage')) {
+                    const div = document.createElement('div');
+                    div.id = 'casesPage';
+                    div.className = 'hidden';
+                    div.innerHTML = `<div class="text-center py-5"><i class="fas fa-folder-open fa-3x text-muted mb-3"></i><h4>使用案例庫</h4><p class="text-muted">這裡可以顯示使用案例庫相關資訊。</p></div>`;
+                    document.querySelector('.main-content').appendChild(div);
+                }
+                document.getElementById('casesPage').classList.remove('hidden');
+                updatePageTitle('使用案例庫');
+            } else if (tab === 'integration') {
+                if(!document.getElementById('integrationPage')) {
+                    const div = document.createElement('div');
+                    div.id = 'integrationPage';
+                    div.className = 'hidden';
+                    div.innerHTML = `<div class="text-center py-5"><i class="fas fa-plug fa-3x text-muted mb-3"></i><h4>整合</h4><p class="text-muted">這裡可以顯示整合相關資訊。</p></div>`;
+                    document.querySelector('.main-content').appendChild(div);
+                }
+                document.getElementById('integrationPage').classList.remove('hidden');
+                updatePageTitle('整合');
+            }
+        }
+        
+        // 更新頁面標題
+        function updatePageTitle(title) {
+            document.getElementById('pageTitle').textContent = title;
+        }
+        
+        // 更新當前時間
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString('zh-TW');
+        }
+        
+        // 重新整理數據
+        function refreshData() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> 重新整理中...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                loadDashboardData();
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 1000);
+        }
+        
+        // 載入儀表板數據
+        function loadDashboardData() {
+            // 更新統計數據
+            updateStats();
+            
+            // 載入圖表
+            loadCharts();
+            
+            // 載入活動列表
+            loadActivityList();
+        }
+        
+        // 更新統計數據
+        function updateStats() {
+            // 模擬從後端獲取數據
+            const stats = {
+                totalUsers: Math.floor(Math.random() * 2000) + 1000,
+                totalMessages: Math.floor(Math.random() * 100000) + 50000,
+                knowledgeItems: Math.floor(Math.random() * 5000) + 2000,
+                avgResponse: (Math.random() * 3 + 1).toFixed(1) + 's'
+            };
+            
+            document.getElementById('totalUsers').textContent = stats.totalUsers.toLocaleString();
+            document.getElementById('totalMessages').textContent = stats.totalMessages.toLocaleString();
+            document.getElementById('knowledgeItems').textContent = stats.knowledgeItems.toLocaleString();
+            document.getElementById('avgResponse').textContent = stats.avgResponse;
+        }
+        
+        // 載入圖表
+        function loadCharts() {
+            const ctx = document.getElementById('userActivityChart').getContext('2d');
+            
+            // 如果已經有圖表，先銷毀
+            if (window.userActivityChart) {
+                window.userActivityChart.destroy();
+            }
+            
+            window.userActivityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['週一', '週二', '週三', '週四', '週五', '週六', '週日'],
+                    datasets: [{
+                        label: '活躍用戶',
+                        data: [120, 190, 150, 250, 220, 300, 280],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 載入活動列表
+        function loadActivityList() {
+            const activities = [
+                { icon: 'fas fa-user-plus', color: 'bg-success', text: '新用戶註冊', time: '2分鐘前' },
+                { icon: 'fas fa-comment', color: 'bg-primary', text: '收到新訊息', time: '5分鐘前' },
+                { icon: 'fas fa-brain', color: 'bg-warning', text: '知識庫更新', time: '10分鐘前' },
+                { icon: 'fas fa-chart-line', color: 'bg-info', text: '系統備份完成', time: '30分鐘前' },
+                { icon: 'fas fa-cog', color: 'bg-secondary', text: '系統設定變更', time: '1小時前' }
+            ];
+            
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="activity-icon ${activity.color}">
+                        <i class="${activity.icon}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div>${activity.text}</div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                `;
+                activityList.appendChild(item);
+            });
+        }
+        
+        // 快速操作函數
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+        
+        function addKnowledge() {
+            window.location.href = '/admin.html';
+        }
+        
+        function viewReports() {
+            window.location.href = '/admin.html';
+        }
+        
+        function systemSettings() {
+            window.location.href = '/admin.html';
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            setInterval(updateTime, 1000);
+            updateTime();
+            loadDashboardData();
+        });
+
+        document.getElementById('aiConfigToggle').onclick = function(e) {
+            e.preventDefault();
+            const menu = document.getElementById('aiConfigMenu');
+            const arrow = document.getElementById('aiConfigArrow');
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'block';
+                arrow.innerHTML = '&#9660;'; // 向下箭頭
+            } else {
+                menu.style.display = 'none';
+                arrow.innerHTML = '&#9654;'; // 向右箭頭
+            }
+        };
+
+        document.querySelectorAll('.nav-link[data-tab]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchTab(this.getAttribute('data-tab'));
+            });
+        });
+
+        // 事件代理，確保點擊 LINE 卡片可彈出 modal
+        document.addEventListener('click', function(e) {
+            // 點擊卡片本身或內部元素都可觸發
+            if (e.target && (e.target.id === 'lineApiCard' || (e.target.closest && e.target.closest('#lineApiCard')))) {
+                var modal = new bootstrap.Modal(document.getElementById('lineApiModal'));
+                document.getElementById('lineApiForm').reset();
+                document.getElementById('lineApiAlert').innerHTML = '';
+                modal.show();
+            }
+        });
+    </script>
+</body>
+</html> 

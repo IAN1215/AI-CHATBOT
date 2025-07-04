@@ -1,0 +1,129 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    border: none;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.dashboard .card {
+    border-radius: 10px;
+}
+
+.dashboard .card-title {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.dashboard .display-4 {
+    font-size: 2.5rem;
+    font-weight: 500;
+}
+
+.search-box {
+    width: 300px;
+}
+
+.chat-list {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.chat-item {
+    border-left: 4px solid #007bff;
+}
+
+.chat-item.pending {
+    border-left-color: #ffc107;
+}
+
+.chat-item.important {
+    border-left-color: #dc3545;
+}
+
+.badge {
+    font-weight: normal;
+    padding: 5px 10px;
+}
+
+.table th {
+    border-top: none;
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+
+.settings .card {
+    height: 100%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .search-box {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .dashboard .card {
+        margin-bottom: 1rem;
+    }
+
+    .chat-list {
+        max-height: 60vh;
+    }
+}
+
+/* Animation */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* Loading spinner */
+.loading {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 3px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+} 

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoChat 管理後台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="admin.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 4px 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .user-card, .knowledge-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border-left: 4px solid #667eea;
+        }
+        
+        .user-card:hover, .knowledge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+            transition: all 0.3s;
+        }
+        
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .tab-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .login-required {
+            text-align: center;
+            padding: 100px 20px;
+        }
+        
+        .login-required i {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登入檢查覆蓋層 -->
+    <div id="loginOverlay" class="position-fixed w-100 h-100 bg-white" style="z-index: 9999; display: none;">
+        <div class="login-required">
+            <i class="fas fa-lock"></i>
+            <h3>需要登入</h3>
+            <p class="text-muted mb-4">請先登入以訪問管理後台</p>
+            <a href="/login.html" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt me-2"></i>前往登入
+            </a>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 側邊欄 -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar p-4">
+                    <div class="text-center mb-4">
+                        <h4><i class="fas fa-robot me-2"></i>EchoChat</h4>
+                        <p class="text-muted small">管理後台</p>
+                        <div class="mt-3">
+                            <small class="text-muted">歡迎，<span id="userName">管理員</span></small>
+                            <br>
+                            <button class="btn btn-sm btn-outline-light mt-2" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-1"></i>登出
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="switchTab('user')">
+                            <i class="fas fa-users me-2"></i>用戶管理
+                        </a>
+                        <a class="nav-link" href="#" onclick="switchTab('knowledge')">
+                            <i class="fas fa-brain me-2"></i>知識庫管理
+                        </a>
+                        <a class="nav-link" href="#" onclick="switchTab('stats')">
+                            <i class="fas fa-chart-bar me-2"></i>統計數據
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- 主要內容區 -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content p-4">
+                    <!-- 標題列 -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">
+                            <span id="pageTitle">用戶管理</span>
+                        </h2>
+                        <div class="d-flex align-items-center">
+                            <span class="me-3">
+                                <i class="fas fa-clock me-1"></i>
+                                <span id="currentTime"></span>
+                            </span>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="refreshData()">
+                                <i class="fas fa-sync-alt me-1"></i>重新整理
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 用戶管理頁面 -->
+                    <div id="userPage">
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-primary mx-auto mb-3">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <h3 id="totalUsers">0</h3>
+                                    <p class="text-muted mb-0">總用戶數</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-success mx-auto mb-3">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <h3 id="activeUsers">0</h3>
+                                    <p class="text-muted mb-0">活躍用戶</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-warning mx-auto mb-3">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <h3 id="todayMessages">0</h3>
+                                    <p class="text-muted mb-0">今日訊息</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card text-center">
+                                    <div class="stats-icon bg-info mx-auto mb-3">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <h3 id="avgResponse">0s</h3>
+                                    <p class="text-muted mb-0">平均回應時間</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4>用戶列表</h4>
+                                <div class="search-box">
+                                    <i class="fas fa-search me-2 text-muted"></i>
+                                    <input type="text" id="userSearch" placeholder="搜尋用戶..." class="border-0 bg-transparent" style="outline: none; width: 200px;">
+                                </div>
+                            </div>
+                            
+                            <div id="userList" class="row">
+                                <!-- 用戶卡片將在這裡動態生成 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 知識庫管理頁面 -->
+                    <div id="knowledgePage" class="hidden">
+                        <div class="tab-content">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h4>知識庫列表</h4>
+                                        <div class="search-box">
+                                            <i class="fas fa-search me-2 text-muted"></i>
+                                            <input type="text" id="knowledgeSearch" placeholder="搜尋知識..." class="border-0 bg-transparent" style="outline: none; width: 200px;">
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="knowledgeList">
+                                        <!-- 知識庫項目將在這裡動態生成 -->
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-plus me-2"></i>新增知識</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">問題</label>
+                                                <textarea id="newQuestion" class="form-control" rows="3" placeholder="輸入問題..."></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">答案</label>
+                                                <textarea id="newAnswer" class="form-control" rows="4" placeholder="輸入答案..."></textarea>
+                                            </div>
+                                            <button class="btn btn-primary w-100" onclick="addKnowledge()">
+                                                <i class="fas fa-save me-2"></i>新增知識
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 統計數據頁面 -->
+                    <div id="statsPage" class="hidden">
+                        <div class="tab-content">
+                            <h4>統計數據</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">用戶活躍度</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="userActivityChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">訊息統計</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="messageChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // 身份驗證檢查
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                document.getElementById('loginOverlay').style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+        
+        // 登出功能
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userInfo');
+            window.location.href = '/login.html';
+        }
+        
+        // 更新用戶資訊
+        function updateUserInfo() {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            document.getElementById('userName').textContent = userInfo.name || '管理員';
+        }
+        
+        // 更新頁面標題
+        function updatePageTitle(title) {
+            document.getElementById('pageTitle').textContent = title;
+        }
+        
+        // 更新當前時間
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString('zh-TW');
+        }
+        
+        // 重新整理數據
+        function refreshData() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> 重新整理中...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                fetchUsers();
+                fetchKnowledge();
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 1000);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkAuth()) {
+                updateUserInfo();
+                setInterval(updateTime, 1000);
+                updateTime();
+            }
+        });
+    </script>
+</body>
+</html>
+

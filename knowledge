@@ -1,0 +1,18 @@
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS knowledge (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question TEXT,
+    answer TEXT
+  )`);
+});
+
+db.run(`INSERT INTO knowledge (question, answer) VALUES (?, ?)`, 
+['系統櫃可以做多高？', '標準最高可以做到240公分喔～'], 
+(err) => {
+  if (err) {
+    console.error('新增資料失敗', err);
+  } else {
+    console.log('✅ 新增資料成功');
+  }
+});
+
